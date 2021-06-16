@@ -1,4 +1,4 @@
-# Equity, Diversity, and Inclusion (EDI)
+# GUI for an EDI Project
 
 An agent based modeling approach used to investigate the impacts of various EDI hiring interventions. A graphical user interface is developed along with simulation of the agent based model. This software is built on the works of Friesen and McLeod [1].
 
