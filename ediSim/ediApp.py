@@ -4,11 +4,12 @@ import pickle
 from edisim import edisim
 from PyQt5.QtWidgets import (
     QApplication, QDialog, QFormLayout, QGroupBox,
-    QLabel, QLineEdit, QPushButton, QVBoxLayout,
+    QLabel, QPushButton, QVBoxLayout,
     QLineEdit, QMessageBox, QProgressBar
 )
 
 scriptDir = os.path.dirname(os.path.realpath(__file__))
+
 
 class ediApp(QDialog):
 
@@ -34,18 +35,18 @@ class ediApp(QDialog):
         mainLayout.addWidget(self.progBar)
         mainLayout.addWidget(simButton)
         mainLayout.addWidget(closeButton)
-        
+
         self.setLayout(mainLayout)
 
         self.setWindowTitle('EDI Form Layout')
         self.show()
 
     def errorMsg(self, msg):
-        errorReply = QMessageBox.question(self, 'Attention!', msg, QMessageBox.Close)
+        QMessageBox.question(self, 'Attention!', msg, QMessageBox.Close)
         self.show()
 
     def waitMsg(self, msg):
-        waitReply = QMessageBox.about(self, 'Attention!', msg)
+        QMessageBox.about(self, 'Attention!', msg)
         self.show()
 
     def createFormGroupBox(self):
@@ -68,7 +69,6 @@ class ediApp(QDialog):
         layout1.addRow(QLabel('ORG Population in Faculty:'), self.ORG)
         layout1.addRow(QLabel('URG Population in Faculty:'), self.URG)
         self.formGroupBox1.setLayout(layout1)
-
 
         # Third form
         self.formGroupBox2 = QGroupBox('Over Represented Group Info')
@@ -112,19 +112,24 @@ class ediApp(QDialog):
 
     def checkForm(self, aVar):
         if '' in aVar.values():
-            self.errorMsg('Form is incomplete! Please fill out all information.')
+            self.errorMsg('Form is incomplete!\
+             Please fill out all information.')
             return False
         elif int(aVar['faculty']) == 0:
-            self.errorMsg('Simulation Info Error! Total faculty population cannot be zero.')
+            self.errorMsg('Simulation Info Error!\
+             Total faculty population cannot be zero.')
             return False
         elif int(aVar['orgApp']) == 0:
-            self.errorMsg('ORG Info Error! ORG applicant population cannot be zero.')
+            self.errorMsg('ORG Info Error!\
+             ORG applicant population cannot be zero.')
             return False
         elif int(aVar['urgApp_0']) == 0 or int(aVar['urgApp_1']) == 0:
-            self.errorMsg('URG Info Error! URG applicant population cannot be zero.')
+            self.errorMsg('URG Info Error!\
+             URG applicant population cannot be zero.')
             return False
         elif int(aVar['ORG']) + int(aVar['URG']) != int(aVar['faculty']):
-            self.errorMsg('Simulation Info Error! ORG & URG sum must equal total Faculty.')
+            self.errorMsg('Simulation Info Error!\
+             ORG & URG sum must equal total Faculty.')
             return False
         elif self.checkNegative(aVar):
             self.errorMsg('Attention! Negative values are invalid.')
@@ -132,7 +137,7 @@ class ediApp(QDialog):
         else:
             self.saveForm()
             return True
-    
+
     def checkNegative(self, aVar):
         for vv in aVar.values():
             if int(vv) < 0:
@@ -148,7 +153,7 @@ class ediApp(QDialog):
             with open(f'{scriptDir}/formData.pkl', 'rb') as ff:
                 self.formVar = pickle.load(ff)
             self.setFrom()
-        except:
+        except Exception:
             pass
 
     def setFrom(self):
@@ -187,7 +192,7 @@ class ediApp(QDialog):
 
     def simulate(self):
         self.updateFormVar()
-    
+
         if self.checkForm(self.formVar):
             self.progBar.setRange(0, int(self.formVar['simNum']) - 1)
             sim = edisim(self.formVar)

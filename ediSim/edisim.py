@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 
 scriptDir = os.path.dirname(os.path.realpath(__file__))
 
+
 class edisim():
 
     def __init__(self, formData):
@@ -22,7 +23,6 @@ class edisim():
         self.minUrgScore_1 = int(formData['minUrgScore_1'])
         self.maxUrgScore_1 = int(formData['maxUrgScore_1'])
 
-
     # incentive function
     def booster(self, start, stop, num):
         """
@@ -40,7 +40,8 @@ class edisim():
         """
         weight = np.array([], dtype=int)
         for kk in range(len(listArray)):
-            weight = np.concatenate((weight, kk*np.ones(listArray[kk], dtype=int)))
+            weight = np.concatenate((weight,
+                                    kk*np.ones(listArray[kk], dtype=int)))
             np.random.shuffle(weight)
         return weight
 
@@ -57,51 +58,62 @@ class edisim():
             ORG = self.ORG
             URG = self.URG
             bothGroups = np.array([self.URG, self.ORG], dtype=int)
-            hires = 0   # number of hires
-            retires = 0 # number of retires
+            hires = 0    # number of hires
+            retires = 0  # number of retires
             ratioORG = [ORG/faculty]    # ORG-faculty ratio
             ratioURG = [URG/faculty]    # URG-faculty ratio
-            scores = [] # scores of hired
+            scores = []  # scores of hired
 
             for ii in range(self.spanNum):
                 # ORG incentives
-                qualityPointORG = self.booster(self.minOrgScore, self.maxOrgScore, self.orgApp)
-                
+                qualityPointORG = self.booster(
+                    self.minOrgScore, self.maxOrgScore, self.orgApp)
+
                 # URG incentives
                 if ii < 60:
-                    qualityPointURG = self.booster(self.minUrgScore_0, self.maxUrgScore_0, self.urgApp_0)
+                    qualityPointURG = self.booster(
+                        self.minUrgScore_0, self.maxUrgScore_0, self.urgApp_0)
                 elif ii >= 60:
-                    qualityPointURG = self.booster(self.minUrgScore_1, self.maxUrgScore_1, self.urgApp_1)
+                    qualityPointURG = self.booster(
+                        self.minUrgScore_1, self.maxUrgScore_1, self.urgApp_1)
 
                 # top applicants in normal EDI
                 topORG_norm = sorted(qualityPointORG)[-2:]
                 topURG_norm = sorted(qualityPointURG)[-2:]
                 topPool = topORG_norm + topURG_norm
-                
+
                 # encoding top applicants
                 w8topPool = self.encodeApplicant(topPool)
-                poolWinner = np.random.randint(0, len(w8topPool))   # random pick form encoded list
+                # random pick form encoded list
+                poolWinner = np.random.randint(0, len(w8topPool))
 
                 # modeling hires
-                if topPool[w8topPool[poolWinner]] >= 90:    # if top score of applicant is >= 90
-                    if w8topPool[poolWinner] == 0 or w8topPool[poolWinner] == 1:    # if their encoding is 0 or 1
-                        ORG += 1    # add 1 to ORG population
-                        hires += 1  # add 1 to hires
-                        newORG += 1 # add 1 to newly ORG hired
-                        scores.append(topPool[w8topPool[poolWinner]])   # append applicant score to the list
-                        if topPool[w8topPool[poolWinner]] == 99:   # if top score of applicant is 99
+                # if top score of applicant is >= 90
+                if topPool[w8topPool[poolWinner]] >= 90:
+                    # if their encoding is 0 or 1
+                    if w8topPool[poolWinner] == 0 or\
+                            w8topPool[poolWinner] == 1:
+                        ORG += 1     # add 1 to ORG population
+                        hires += 1   # add 1 to hires
+                        newORG += 1  # add 1 to newly ORG hired
+                        # append applicant score to the list
+                        scores.append(topPool[w8topPool[poolWinner]])
+                        # if top score of applicant is 99
+                        if topPool[w8topPool[poolWinner]] == 99:
                             bestWins += 1   # add 1 to best winner
                     else:
-                        URG += 1    # add 1 to URG population
-                        hires += 1  # add 1 to hires
-                        newURG += 1 # add 1 to newly URG hired
-                        scores.append(topPool[w8topPool[poolWinner]])   # append applicant score to the list
+                        URG += 1     # add 1 to URG population
+                        hires += 1   # add 1 to hires
+                        newURG += 1  # add 1 to newly URG hired
+                        # append applicant score to the list
+                        scores.append(topPool[w8topPool[poolWinner]])
 
                 # modeling attrition
-                if ii%4 == 0: # loop if 1 year has passed
+                if ii % 4 == 0:  # loop if 1 year has passed
                     # encoding initial faculty members [10, 90]
                     w8faculty = self.encodeApplicant(bothGroups)
-                    facultyLoser = np.random.randint(0, len(w8faculty)) # random pick from encoded list
+                    # random pick from encoded list
+                    facultyLoser = np.random.randint(0, len(w8faculty))
 
                     if w8faculty[facultyLoser] == 1:    # if random pick is 1
                         ORG -= 1
@@ -109,10 +121,10 @@ class edisim():
                     else:   # if random pick is 0
                         URG -= 1
                         retires += 1
-                
+
                 ratioORG.append(ORG/(URG + ORG))
                 ratioURG.append(URG/(URG + ORG))
-            
+
             tORG.append(ratioORG)
             tURG.append(ratioURG)
 
@@ -135,7 +147,7 @@ class edisim():
 
         self.plotResults(meanURG, stdURG, 'URG')
         self.plotResults(meanORG, stdORG, 'ORG')
-    
+
     def plotResults(self, y, stdError, name):
         plt.figure(figsize=(12, 8))
         plt.errorbar(np.arange(len(y)), y, yerr=stdError, label=name)
@@ -144,4 +156,3 @@ class edisim():
         plt.ylabel('EDI Representation')
         plt.legend()
         plt.show()
-        
